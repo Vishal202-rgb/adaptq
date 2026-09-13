@@ -145,7 +145,16 @@ TEST_CASE("SessionSnapshot: load rejects bad magic", "[snapshot]") {
     fs::remove(path);
 }
 
-TEST_CASE("SessionSnapshot: load missing file throws", "[snapshot]") {
+TEST_CASE("SessionSnapshot: load rejects truncated file", "[snapshot]") {
+    std::string path = tmp_path("adaptq_truncated.aqss");
+    {
+        std::ofstream f(path, std::ios::binary);
+        uint32_t magic = SessionSnapshot::kMagic;
+        f.write(reinterpret_cast<const char *>(&magic), 4);
+    }
+    REQUIRE_THROWS_AS(SessionSnapshot::load(path), std::runtime_error);
+    fs::remove(path);
+}TEST_CASE("SessionSnapshot: load missing file throws", "[snapshot]") {
     REQUIRE_THROWS_AS(SessionSnapshot::load("/nonexistent/path/adaptq.aqss"),
                       std::runtime_error);
 }
@@ -194,3 +203,4 @@ TEST_CASE("SessionSnapshot: save/load is deterministic for same input", "[snapsh
     fs::remove(p1);
     fs::remove(p2);
 }
+

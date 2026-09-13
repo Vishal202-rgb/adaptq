@@ -36,21 +36,25 @@ static void write_bytes(std::ostream &out, const void *p, size_t n) {
 
 static uint32_t read_u32(std::istream &in) {
     uint32_t v = 0;
-    in.read(reinterpret_cast<char *>(&v), 4);
+    if (!in.read(reinterpret_cast<char *>(&v), 4))
+        throw std::runtime_error("SessionSnapshot::load: truncated snapshot");
     return v;
 }
 static uint64_t read_u64(std::istream &in) {
     uint64_t v = 0;
-    in.read(reinterpret_cast<char *>(&v), 8);
+    if (!in.read(reinterpret_cast<char *>(&v), 8))
+        throw std::runtime_error("SessionSnapshot::load: truncated snapshot");
     return v;
 }
 static int32_t read_i32(std::istream &in) {
     int32_t v = 0;
-    in.read(reinterpret_cast<char *>(&v), 4);
+    if (!in.read(reinterpret_cast<char *>(&v), 4))
+        throw std::runtime_error("SessionSnapshot::load: truncated snapshot");
     return v;
 }
 static void read_bytes(std::istream &in, void *p, size_t n) {
-    in.read(reinterpret_cast<char *>(p), (std::streamsize)n);
+    if (n > 0 && !in.read(reinterpret_cast<char *>(p), (std::streamsize)n))
+        throw std::runtime_error("SessionSnapshot::load: truncated snapshot");
 }
 
 /* =========================================================================
@@ -303,3 +307,5 @@ SessionSnapshot SessionSnapshot::load(const std::string &path) {
 }
 
 } /* namespace adaptq */
+
+
